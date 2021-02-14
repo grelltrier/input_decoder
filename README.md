@@ -1,4 +1,5 @@
 [![dependency status](https://deps.rs/repo/github/grelltrier/input_decoder/status.svg)](https://deps.rs/repo/github/grelltrier/input_decoder)
+![Build](https://github.com/grelltrier/input_decoder/workflows/Build/badge.svg)
 
 #Input decoder
 
