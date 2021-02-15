@@ -104,7 +104,7 @@ impl InputDecoder {
         }
         let mut final_probabilities: Vec<(String, f64)> = final_probabilities.drain().collect();
         final_probabilities.sort_by(|(_, prob_a), (_, prob_b)| {
-            prob_a.partial_cmp(prob_b).unwrap_or(Ordering::Equal)
+            prob_b.partial_cmp(prob_a).unwrap_or(Ordering::Equal)
         });
         final_probabilities
     }
