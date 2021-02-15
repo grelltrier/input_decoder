@@ -99,8 +99,9 @@ impl InputDecoder {
         for (word, log_prob) in predictions {
             final_probabilities.insert(word, log_prob);
         }
-        for (word, prob) in k_best {
-            *final_probabilities.entry(word).or_insert(f64::MIN) += prob.ln();
+        for (word, dtw_dist) in k_best {
+            // The probability is calculated by from the DTW distance
+            *final_probabilities.entry(word).or_insert(f64::MIN) += ((bsf - dtw_dist) / bsf).ln();
         }
         let mut final_probabilities: Vec<(String, f64)> = final_probabilities.drain().collect();
         final_probabilities.sort_by(|(_, prob_a), (_, prob_b)| {
