@@ -27,7 +27,13 @@ impl InputDecoder {
         }
     }
 
-    pub fn entered_word(&mut self, word: String) {
+    pub fn reset(&mut self) {
+        self.lm_state = LMState::default();
+        self.last_words.clear();
+        self.predictions = None;
+    }
+
+    pub fn entered_word(&mut self, word: &str) {
         let word = word.to_ascii_lowercase();
         if self.last_words.len() == 3 {
             self.last_words.pop_front();
