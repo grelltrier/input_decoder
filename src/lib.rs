@@ -96,7 +96,7 @@ impl InputDecoder {
             }
         }
 
-        let mut final_probabilities = HashMap::new();
+        /*let mut final_probabilities = HashMap::new();
         for (word, log_prob) in predictions {
             final_probabilities.insert(word, log_prob);
         }
@@ -108,7 +108,8 @@ impl InputDecoder {
         final_probabilities.sort_by(|(_, prob_a), (_, prob_b)| {
             prob_b.partial_cmp(prob_a).unwrap_or(Ordering::Equal)
         });
-        final_probabilities
+        final_probabilities*/
+        k_best
     }
 }
 
