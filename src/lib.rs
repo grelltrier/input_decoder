@@ -63,7 +63,7 @@ impl InputDecoder {
         predictions_owned
     }
 
-    pub fn find_similar_words(&mut self, query_path: Vec<(f64, f64)>) -> Vec<(String, f64)> {
+    pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
         let mut dtw_dist;
         let mut k_best: Vec<(String, f64)> =
             vec![(String::new(), f64::INFINITY); self.max_no_predictions]; // Stores the k nearest neighbors (location, DTW distance)
