@@ -63,11 +63,11 @@ impl InputDecoder {
         predictions_owned
     }
 
-    pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> String {
+    pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
         let mut dtw_dist;
-        // let mut k_best: Vec<(String, f64)> =
-        //     vec![(String::new(), f64::INFINITY); self.max_no_predictions]; // Stores the k nearest neighbors (location, DTW distance)
-        let mut bsf = (String::new(), f64::MAX);
+        let k = 10;
+        let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
+        let mut bsf = k_best[k - 1].1;
 
         let mut candidate_path;
 
@@ -82,13 +82,13 @@ impl InputDecoder {
                 &query_path,
                 None,
                 usize::MAX - 1,
-                bsf.1,
+                bsf,
                 &dist_points,
             );
-            if dtw_dist < bsf.1 {
-                //let candidate: String = candidate_word.to_owned();
-                //knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
-                bsf = (candidate_word.to_string(), dtw_dist) // k_best[self.max_no_predictions - 1].1;
+            if dtw_dist < bsf {
+                let candidate: String = candidate_word.to_owned();
+                knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
+                bsf = k_best[k - 1].1;
             }
         }
 
@@ -105,12 +105,12 @@ impl InputDecoder {
             prob_b.partial_cmp(prob_a).unwrap_or(Ordering::Equal)
         });
         final_probabilities*/
-        //println!("k_best gestures:");
-        //for (word, _) in k_best.iter().take(10) {
-        //    println!("{}", word);
-        // }
+        println!("k_best gestures:");
+        for (word, _) in k_best.iter().take(10) {
+            println!("{}", word);
+        }
 
-        bsf.0
+        k_best
     }
 }
 
