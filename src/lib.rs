@@ -74,11 +74,7 @@ impl InputDecoder {
         let predictions = self.get_predictions();
 
         // Compare the paths of each word
-        for (candidate_word, candidate_probability) in &predictions {
-            if *candidate_probability < bsf {
-                continue;
-            }
-
+        for (candidate_word, _) in &predictions {
             candidate_path = path_gen::get_path(&candidate_word);
 
             dtw_dist = dtw::ucr_improved::dtw(
@@ -109,6 +105,11 @@ impl InputDecoder {
             prob_b.partial_cmp(prob_a).unwrap_or(Ordering::Equal)
         });
         final_probabilities*/
+        println!("k_best gestures:");
+        for (word, _) in &k_best {
+            println!("{}", word);
+        }
+
         k_best
     }
 }
