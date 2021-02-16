@@ -106,7 +106,7 @@ impl InputDecoder {
         });
         final_probabilities*/
         println!("k_best gestures:");
-        for (word, _) in &k_best.take(10) {
+        for (word, _) in k_best.iter().take(10) {
             println!("{}", word);
         }
 
