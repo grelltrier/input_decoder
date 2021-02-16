@@ -14,7 +14,7 @@ impl InputDecoder {
     pub fn new(fname_lm: &str) -> Self {
         let last_words = VecDeque::with_capacity(3);
         let predictions = None;
-        let max_no_predictions = 100;
+        let max_no_predictions = 1000;
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
 
@@ -63,16 +63,11 @@ impl InputDecoder {
         predictions_owned
     }
 
-    pub fn find_similar_words(
-        &mut self,
-        query_path: Vec<(f64, f64)>,
-        k: usize,
-    ) -> Vec<(String, f64)> {
-        //let k = 7;
-
+    pub fn find_similar_words(&mut self, query_path: Vec<(f64, f64)>) -> Vec<(String, f64)> {
         let mut dtw_dist;
-        let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
-        let mut bsf = k_best[k - 1].1;
+        let mut k_best: Vec<(String, f64)> =
+            vec![(String::new(), f64::INFINITY); self.max_no_predictions]; // Stores the k nearest neighbors (location, DTW distance)
+        let mut bsf = k_best[self.max_no_predictions - 1].1;
 
         let mut candidate_path;
 
@@ -97,7 +92,7 @@ impl InputDecoder {
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
                 knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
-                bsf = k_best[k - 1].1;
+                bsf = k_best[self.max_no_predictions - 1].1;
             }
         }
 
