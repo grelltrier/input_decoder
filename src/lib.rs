@@ -14,7 +14,7 @@ impl InputDecoder {
     pub fn new(fname_lm: &str) -> Self {
         let last_words = VecDeque::with_capacity(3);
         let predictions = None;
-        let max_no_predictions = 1000;
+        let max_no_predictions = 3000;
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
 
