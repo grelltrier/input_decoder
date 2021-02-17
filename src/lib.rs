@@ -1,7 +1,7 @@
 use language_model::{LMState, LanguageModel};
 use path_gen::WordPath;
 use std::collections::HashMap;
-use std::{cmp::Ordering, collections::VecDeque};
+use std::collections::VecDeque;
 
 pub struct InputDecoder {
     last_words: VecDeque<String>,
