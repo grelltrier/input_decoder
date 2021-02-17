@@ -1,4 +1,5 @@
 use language_model::{LMState, LanguageModel};
+use path_gen::WordPath;
 use std::collections::HashMap;
 use std::{cmp::Ordering, collections::VecDeque};
 
@@ -8,6 +9,7 @@ pub struct InputDecoder {
     max_no_predictions: usize,
     language_model: LanguageModel,
     lm_state: LMState,
+    key_layout: HashMap<String, (f64, f64)>,
 }
 
 impl InputDecoder {
@@ -17,6 +19,7 @@ impl InputDecoder {
         let max_no_predictions = 3000;
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
+        let key_layout = path_gen::get_default_buttons_centers();
 
         InputDecoder {
             last_words,
@@ -24,6 +27,7 @@ impl InputDecoder {
             max_no_predictions,
             language_model,
             lm_state,
+            key_layout,
         }
     }
 
@@ -72,10 +76,32 @@ impl InputDecoder {
         let mut candidate_path;
 
         let predictions = self.get_predictions();
-
+        let mut word_path;
         // Compare the paths of each word
         for (candidate_word, _) in &predictions {
-            candidate_path = path_gen::get_path(&candidate_word);
+            word_path = WordPath::new(&self.key_layout, candidate_word);
+
+            let (candidate_first, candidate_last) = word_path.get_first_last_points();
+
+            if let Some(candidate_first) = candidate_first {
+                let candidate_last = if let Some(candidate_last) = candidate_last {
+                    candidate_last
+                } else {
+                    candidate_first
+                };
+
+                let mut dist = dist_points(candidate_first, &query_path[0]);
+                dist += dist_points(candidate_last, &query_path[query_path.len() - 1]);
+
+                if dist > bsf {
+                    continue;
+                }
+            } else {
+                // The candidate word is an empty string
+                continue;
+            }
+
+            candidate_path = word_path.get_path();
 
             dtw_dist = dtw::ucr_improved::dtw(
                 &candidate_path,
