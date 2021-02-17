@@ -55,6 +55,15 @@ impl InputDecoder {
         }
     }
 
+    pub fn get_all_words(&self) -> Vec<(String, f64)> {
+        let predictions_refs = self.language_model.predict(LMState::default(), usize::MAX);
+        let mut predictions_owned = Vec::new();
+        for (word, prob) in predictions_refs {
+            predictions_owned.push((word.to_string(), prob as f64));
+        }
+        predictions_owned
+    }
+
     fn update_predictions(&mut self) -> Vec<(String, f64)> {
         let predictions_refs = self
             .language_model
