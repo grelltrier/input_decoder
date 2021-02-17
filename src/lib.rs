@@ -82,9 +82,8 @@ impl InputDecoder {
         let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
         let mut bsf = k_best[k - 1].1;
 
-        let mut candidate_path;
-
         let predictions = self.get_predictions();
+        let mut candidate_path;
         let mut word_path;
         // Compare the paths of each word
         for (candidate_word, _) in &predictions {
@@ -110,10 +109,14 @@ impl InputDecoder {
                 continue;
             }
 
-            candidate_path = word_path.get_path();
+            candidate_path = if let Some(candidate_path) = word_path.get_path() {
+                candidate_path
+            } else {
+                continue;
+            };
 
-            if candidate_word == "doing" {
-                println!("Candidate path for the word 'doing':");
+            if candidate_word == "doing" || candidate_word == "going" {
+                println!("Candidate path for the word '{}':", candidate_word);
                 for point in &candidate_path {
                     println!("{:?}", point);
                 }
