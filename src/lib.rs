@@ -82,6 +82,11 @@ impl InputDecoder {
         let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
         let mut bsf = k_best[k - 1].1;
 
+        println!("drawn path:");
+        for (x, y) in query_path {
+            println!("({:.3},{:.3})", x, y);
+        }
+
         let predictions = self.get_predictions();
         let mut candidate_path;
         let mut word_path;
