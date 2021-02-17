@@ -112,6 +112,13 @@ impl InputDecoder {
 
             candidate_path = word_path.get_path();
 
+            if candidate_word == "doing" {
+                println!("Candidate path for the word 'doing':");
+                for point in &candidate_path {
+                    println!("{:?}", point);
+                }
+            }
+
             dtw_dist = dtw::ucr_improved::dtw(
                 &candidate_path,
                 &query_path,
