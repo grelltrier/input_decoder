@@ -91,7 +91,7 @@ impl InputDecoder {
         let mut word_path;
         // Compare the paths of each word
         for (candidate_word, _) in &predictions {
-            word_path = WordPath::new(&self.key_layout, candidate_word);
+            word_path = WordPath::new(&self.key_layout, candidate_word, query_path.len());
 
             let (candidate_first, candidate_last) = word_path.get_first_last_points();
 
@@ -126,14 +126,10 @@ impl InputDecoder {
                 }
             }
 
-            dtw_dist = dtw::ucr_improved::dtw(
-                &candidate_path,
-                &query_path,
-                None,
-                usize::MAX - 1,
-                bsf,
-                &dist_points,
-            );
+            let w = (query_path.len() as f64 * 0.1).round() as usize;
+
+            dtw_dist =
+                dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
                 knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
