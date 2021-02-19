@@ -81,9 +81,11 @@ impl InputDecoder {
         let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
         let mut bsf = k_best[k - 1].1;
 
+        let w = (query_path.len() as f64 * 0.1).round() as usize;
+
         println!("drawn path:");
         for (x, y) in query_path {
-            println!("({:.3},{:.3})", x, y);
+            println!("{:.3},{:.3}", x, y);
         }
 
         let predictions = self.get_predictions();
@@ -125,8 +127,6 @@ impl InputDecoder {
                     println!("{:?}", point);
                 }
             }
-
-            let w = (query_path.len() as f64 * 0.1).round() as usize;
 
             dtw_dist =
                 dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
