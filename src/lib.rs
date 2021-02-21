@@ -121,12 +121,7 @@ impl InputDecoder {
                 continue;
             };
 
-            if candidate_word == "doing" || candidate_word == "going" {
-                println!("Candidate path for the word '{}':", candidate_word);
-                for point in &candidate_path {
-                    println!("{:?}", point);
-                }
-            }
+            println!("Candidate word '{}':", candidate_word);
 
             dtw_dist =
                 dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
