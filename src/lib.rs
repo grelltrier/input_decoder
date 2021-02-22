@@ -125,8 +125,7 @@ impl InputDecoder {
 
             dtw_dist =
                 dtw::ucr_improved::dtw(&candidate_path.0, &query_path, None, w, bsf, &dist_points);
-            // We multiply the dtw distance by the distance of the candidates path because shorter paths have a higher sampling rate than longer paths due to the ideal paths always having the same length as the query's path. If a path is twice as long, we multiply the dtw by two, accounting for the higher sampling rate
-            dtw_dist *= candidate_path.1;
+
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
                 knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
