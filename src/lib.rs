@@ -102,6 +102,22 @@ impl InputDecoder {
             println!("{:.3},{:.3}", x, y);
         }
 
+        // In order to better compare the drawn path with the ideal path, we want them to have a similar density of points
+        // To generate ideal paths with a similar density, we calculate the density of the drawn path
+        let desired_point_density = {
+            let mut drawn_path_length = 0.0;
+            let mut drawn_path_iter = query_path.iter().peekable();
+            let mut leg_dist;
+            // Calculate the length of the drawn path
+            while let Some(start_point) = drawn_path_iter.next() {
+                if let Some(&end_point) = drawn_path_iter.peek() {
+                    leg_dist = dist_points(start_point, end_point);
+                    drawn_path_length += leg_dist;
+                }
+            }
+            drawn_path_length / query_path.len() as f64
+        };
+
         let predictions = self.get_predictions();
         let mut candidate_word;
         let mut candidate_path;
@@ -110,7 +126,7 @@ impl InputDecoder {
         // The candidate words are iterated over in a random order
         for random_idx in &self.random_order {
             candidate_word = &predictions[*random_idx].0;
-            word_path = WordPath::new(&self.key_layout, candidate_word, query_path.len());
+            word_path = WordPath::new(&self.key_layout, candidate_word);
 
             let (candidate_first, candidate_last) = word_path.get_first_last_points();
 
@@ -132,7 +148,8 @@ impl InputDecoder {
                 continue;
             }
 
-            candidate_path = if let Some(candidate_path) = word_path.get_path() {
+            candidate_path = if let Some(candidate_path) = word_path.get_path(desired_point_density)
+            {
                 candidate_path
             } else {
                 continue;
@@ -141,7 +158,7 @@ impl InputDecoder {
             println!("Candidate word '{}':", candidate_word);
 
             dtw_dist =
-                dtw::ucr_improved::dtw(&candidate_path.0, &query_path, None, w, bsf, &dist_points);
+                dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
 
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
@@ -172,6 +189,6 @@ impl InputDecoder {
     }
 }
 
-fn dist_points(a: &(f64, f64), b: &(f64, f64)) -> f64 {
-    f64::sqrt((a.0 - b.0).powi(2) + (a.1 - b.1).powi(2))
+fn dist_points(start: &(f64, f64), end: &(f64, f64)) -> f64 {
+    f64::sqrt((start.0 - end.0).powi(2) + (start.1 - end.1).powi(2))
 }
