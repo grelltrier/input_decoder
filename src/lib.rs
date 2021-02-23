@@ -155,8 +155,6 @@ impl InputDecoder {
                 continue;
             };
 
-            println!("Candidate word '{}':", candidate_word);
-
             dtw_dist =
                 dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
 
