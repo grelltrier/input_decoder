@@ -5,7 +5,6 @@ use std::collections::VecDeque;
 
 pub struct InputDecoder {
     last_words: VecDeque<String>,
-    predictions: Option<Vec<(String, f64)>>,
     max_no_predictions: usize,
     language_model: LanguageModel,
     lm_state: LMState,
@@ -15,14 +14,12 @@ pub struct InputDecoder {
 impl InputDecoder {
     pub fn new(fname_lm: &str, max_no_predictions: usize) -> Self {
         let last_words = VecDeque::with_capacity(3);
-        let predictions = None;
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
         let key_layout = path_gen::get_default_buttons_centers();
 
         InputDecoder {
             last_words,
-            predictions,
             max_no_predictions,
             language_model,
             lm_state,
@@ -33,7 +30,6 @@ impl InputDecoder {
     pub fn reset(&mut self) {
         self.lm_state = LMState::default();
         self.last_words.clear();
-        self.predictions = None;
     }
 
     pub fn entered_word(&mut self, word: &str) {
@@ -43,36 +39,10 @@ impl InputDecoder {
         }
         self.lm_state = self.language_model.get_next_state(self.lm_state, &word);
         self.last_words.push_back(word);
-        self.predictions = None;
     }
 
-    pub fn get_predictions(&mut self) -> Vec<(String, f64)> {
-        if let Some(predictions) = &self.predictions {
-            predictions.clone()
-        } else {
-            self.update_predictions()
-        }
-    }
-
-    pub fn get_all_words(&self) -> Vec<(String, f64)> {
-        let predictions_refs = self.language_model.predict(LMState::default(), usize::MAX);
-        let mut predictions_owned = Vec::new();
-        for (word, prob) in predictions_refs {
-            predictions_owned.push((word.to_string(), prob as f64));
-        }
-        predictions_owned
-    }
-
-    fn update_predictions(&mut self) -> Vec<(String, f64)> {
-        let predictions_refs = self
-            .language_model
-            .predict(self.lm_state, self.max_no_predictions);
-        let mut predictions_owned = Vec::new();
-        for (word, prob) in predictions_refs {
-            predictions_owned.push((word.to_string(), prob as f64));
-        }
-        self.predictions = Some(predictions_owned.clone());
-        predictions_owned
+    pub fn get_all_words(&self) -> Vec<(&String, f32)> {
+        self.language_model.predict(LMState::default(), usize::MAX)
     }
 
     pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
@@ -104,12 +74,14 @@ impl InputDecoder {
             drawn_path_length / query_path.len() as f64
         };
 
-        let predictions = self.get_predictions();
+        let predictions = self
+            .language_model
+            .predict(self.lm_state, self.max_no_predictions);
         let mut candidate_path;
         let mut word_path;
         // Compare the paths of each word
         // The candidate words are iterated over in a random order
-        for (candidate_word, _) in &predictions {
+        for &(candidate_word, _) in &predictions {
             word_path = WordPath::new(&self.key_layout, candidate_word);
 
             let (candidate_first, candidate_last) = word_path.get_first_last_points();
