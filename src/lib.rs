@@ -1,10 +1,8 @@
 use language_model::{LMState, LanguageModel};
 use path_gen::WordPath;
 use std::collections::HashMap;
-use std::collections::VecDeque;
 
 pub struct InputDecoder {
-    last_words: VecDeque<String>,
     max_no_predictions: usize,
     language_model: LanguageModel,
     lm_state: LMState,
@@ -13,13 +11,11 @@ pub struct InputDecoder {
 
 impl InputDecoder {
     pub fn new(fname_lm: &str, max_no_predictions: usize) -> Self {
-        let last_words = VecDeque::with_capacity(3);
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
         let key_layout = path_gen::get_default_buttons_centers();
 
         InputDecoder {
-            last_words,
             max_no_predictions,
             language_model,
             lm_state,
@@ -29,16 +25,11 @@ impl InputDecoder {
 
     pub fn reset(&mut self) {
         self.lm_state = LMState::default();
-        self.last_words.clear();
     }
 
     pub fn entered_word(&mut self, word: &str) {
         let word = word.to_ascii_lowercase();
-        if self.last_words.len() == 3 {
-            self.last_words.pop_front();
-        }
         self.lm_state = self.language_model.get_next_state(self.lm_state, &word);
-        self.last_words.push_back(word);
     }
 
     pub fn get_predictions(&self) -> Vec<String> {
