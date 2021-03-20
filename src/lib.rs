@@ -1,7 +1,5 @@
 use language_model::{LMState, LanguageModel};
 use path_gen::WordPath;
-use rand::seq::SliceRandom;
-use rand::thread_rng;
 use std::collections::HashMap;
 use std::collections::VecDeque;
 
@@ -12,7 +10,6 @@ pub struct InputDecoder {
     language_model: LanguageModel,
     lm_state: LMState,
     key_layout: HashMap<String, (f64, f64)>,
-    random_order: Vec<usize>,
 }
 
 impl InputDecoder {
@@ -22,16 +19,6 @@ impl InputDecoder {
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
         let key_layout = path_gen::get_default_buttons_centers();
-        let mut rng = thread_rng();
-
-        // Create a random order
-        // This is done to be able to iterate over the vector of predictions without them being alphabetically ordered.
-        // This is advantegeous for the gesture recognition. If the candidate words are alphabetically ordered, the paths are very similar and in the worst case very few are skipped and the DTW is calculated many times
-        let mut random_order = Vec::new();
-        for idx in 0..max_no_predictions {
-            random_order.push(idx);
-        }
-        random_order.shuffle(&mut rng);
 
         InputDecoder {
             last_words,
@@ -40,7 +27,6 @@ impl InputDecoder {
             language_model,
             lm_state,
             key_layout,
-            random_order,
         }
     }
 
@@ -119,13 +105,11 @@ impl InputDecoder {
         };
 
         let predictions = self.get_predictions();
-        let mut candidate_word;
         let mut candidate_path;
         let mut word_path;
         // Compare the paths of each word
         // The candidate words are iterated over in a random order
-        for random_idx in &self.random_order {
-            candidate_word = &predictions[*random_idx].0;
+        for (candidate_word, _) in &predictions {
             word_path = WordPath::new(&self.key_layout, candidate_word);
 
             let (candidate_first, candidate_last) = word_path.get_first_last_points();
