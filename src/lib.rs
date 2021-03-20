@@ -41,6 +41,16 @@ impl InputDecoder {
         self.last_words.push_back(word);
     }
 
+    pub fn get_predictions(&self) -> Vec<String> {
+        let predictions: Vec<String> = self
+            .language_model
+            .predict(self.lm_state, self.max_no_predictions)
+            .into_iter()
+            .map(|(word, _)| word.clone())
+            .collect();
+        predictions
+    }
+
     pub fn get_all_words(&self) -> Vec<(&String, f32)> {
         self.language_model.predict(LMState::default(), usize::MAX)
     }
