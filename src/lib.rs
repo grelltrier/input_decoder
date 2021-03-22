@@ -10,6 +10,9 @@ pub struct InputDecoder {
 }
 
 impl InputDecoder {
+    /// Create a new InputDecoder struct
+    /// A file name to the language model and the maximum
+    /// number of predictions must be provided
     pub fn new(fname_lm: &str, max_no_predictions: usize) -> Self {
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
@@ -23,15 +26,18 @@ impl InputDecoder {
         }
     }
 
+    /// Reset the InputDecoder to its initial state
     pub fn reset(&mut self) {
         self.lm_state = LMState::default();
     }
 
+    /// Take a word as input
     pub fn entered_word(&mut self, word: &str) {
         let word = word.to_ascii_lowercase();
         self.lm_state = self.language_model.get_next_state(self.lm_state, &word);
     }
 
+    /// Get a prediction for the next word
     pub fn get_predictions(&self) -> Vec<String> {
         let predictions: Vec<String> = self
             .language_model
@@ -42,6 +48,9 @@ impl InputDecoder {
         predictions
     }
 
+    /// Find the most similar word for the provided path
+    /// Only the most likely next words are considered
+    /// The method uses DTW to calculate the similarity
     pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
         let mut dtw_dist;
         let k = 10;
@@ -49,11 +58,6 @@ impl InputDecoder {
         let mut bsf = k_best[k - 1].1;
 
         let w = (query_path.len() as f64 * 0.1).round() as usize;
-
-        println!("drawn path:");
-        for (x, y) in query_path {
-            println!("{:.3},{:.3}", x, y);
-        }
 
         // In order to better compare the drawn path with the ideal path, we want them to have a similar density of points
         // To generate ideal paths with a similar density, we calculate the density of the drawn path
@@ -77,12 +81,12 @@ impl InputDecoder {
         let mut candidate_path;
         let mut word_path;
         // Compare the paths of each word
-        // The candidate words are iterated over in a random order
         for &(candidate_word, _) in &predictions {
             word_path = WordPath::new(&self.key_layout, candidate_word);
 
             let (candidate_first, candidate_last) = word_path.get_first_last_points();
 
+            // Use lower bound of Kim to skip impossible candidates
             if let Some(candidate_first) = candidate_first {
                 let candidate_last = if let Some(candidate_last) = candidate_last {
                     candidate_last
@@ -101,6 +105,7 @@ impl InputDecoder {
                 continue;
             }
 
+            // The candidate counld not be skipped so the full path is generated
             candidate_path = if let Some(candidate_path) = word_path.get_path(desired_point_density)
             {
                 candidate_path
@@ -108,21 +113,17 @@ impl InputDecoder {
                 continue;
             };
 
+            // Calculate the similarity
             dtw_dist =
                 dtw::ucr_improved::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
 
+            // If the candidate is a better match, save it
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
                 knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
                 bsf = k_best[k - 1].1;
             }
         }
-
-        println!("k_best gestures:");
-        for (word, _) in k_best.iter().take(10) {
-            println!("{}", word);
-        }
-
         k_best
     }
 }
