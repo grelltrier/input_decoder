@@ -20,6 +20,9 @@ fn test_get_predictions() {
     input_decoder.entered_word("b");
     let predictions = input_decoder.get_predictions();
     let correct_predictions = vec!["a", "b"];
+    for prediction in &predictions {
+        println!("{}", prediction);
+    }
     assert!(predictions == correct_predictions);
 
     // Reset and go to state 1
