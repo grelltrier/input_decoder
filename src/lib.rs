@@ -2,6 +2,9 @@ use language_model::{LMState, LanguageModel};
 use path_gen::WordPath;
 use std::collections::HashMap;
 
+#[cfg(test)]
+mod tests;
+
 pub struct InputDecoder {
     max_no_predictions: usize,
     language_model: LanguageModel,
@@ -13,10 +16,13 @@ impl InputDecoder {
     /// Create a new InputDecoder struct
     /// A file name to the language model and the maximum
     /// number of predictions must be provided
-    pub fn new(fname_lm: &str, max_no_predictions: usize) -> Self {
+    pub fn new(
+        fname_lm: &str,
+        key_layout: HashMap<String, (f64, f64)>,
+        max_no_predictions: usize,
+    ) -> Self {
         let language_model = LanguageModel::read(fname_lm).unwrap();
         let lm_state = LMState::default();
-        let key_layout = path_gen::get_default_buttons_centers();
 
         InputDecoder {
             max_no_predictions,
@@ -43,7 +49,7 @@ impl InputDecoder {
             .language_model
             .predict(self.lm_state, self.max_no_predictions)
             .into_iter()
-            .map(|(word, _)| word.clone())
+            .map(|(word, _)| word.to_string())
             .collect();
         predictions
     }
@@ -51,7 +57,7 @@ impl InputDecoder {
     /// Find the most similar word for the provided path
     /// Only the most likely next words are considered
     /// The method uses DTW to calculate the similarity
-    pub fn find_similar_words(&mut self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
+    pub fn find_similar_words(&self, query_path: &Vec<(f64, f64)>) -> Vec<(String, f64)> {
         let mut dtw_dist;
         let k = 10;
         let mut k_best: Vec<(String, f64)> = vec![(String::new(), f64::INFINITY); k]; // Stores the k nearest neighbors (location, DTW distance)
@@ -120,7 +126,7 @@ impl InputDecoder {
             // If the candidate is a better match, save it
             if dtw_dist < bsf {
                 let candidate: String = candidate_word.to_owned();
-                knn_dtw::ucr::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
+                knn_dtw::insert_into_k_bsf((candidate, dtw_dist), &mut k_best);
                 bsf = k_best[k - 1].1;
             }
         }
