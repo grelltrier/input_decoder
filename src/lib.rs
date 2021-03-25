@@ -48,7 +48,7 @@ impl InputDecoder {
         let predictions: Vec<String> = self
             .language_model
             .predict(self.lm_state, self.max_no_predictions)
-            .into_iter()
+            .iter()
             .map(|(word, _)| word.to_string())
             .collect();
         predictions
