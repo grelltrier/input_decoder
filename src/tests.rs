@@ -1,7 +1,9 @@
 use super::*;
 
 #[test]
-fn test_load_model() {
+// Test case E1
+// Load the language model and create a new input decoder
+fn test_new_decoder() {
     let fname_lm = "language_model.bin";
     let key_layout = path_gen::get_default_buttons_centers();
     let max_no_predictions = 2;
@@ -9,6 +11,8 @@ fn test_load_model() {
 }
 
 #[test]
+// Test case E2
+// Create a new input decoder, enter words and get predictions
 fn test_get_predictions() {
     let fname_lm = "language_model.bin";
     let key_layout = path_gen::get_default_buttons_centers();
@@ -32,6 +36,8 @@ fn test_get_predictions() {
 }
 
 #[test]
+// Test case E3
+// Create a new input decoder and decode paths
 fn test_get_similar_word() {
     let fname_lm = "language_model.bin";
     let key_layout = path_gen::get_default_buttons_centers();
