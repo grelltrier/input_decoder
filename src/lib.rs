@@ -120,7 +120,8 @@ impl InputDecoder {
             };
 
             // Calculate the similarity
-            dtw_dist = dtw::rpruned::dtw(&candidate_path, &query_path, None, w, bsf, &dist_points);
+            dtw_dist = dtw::rpruned::dtw(&candidate_path, &query_path, 
+                None, w, bsf, &dist_points);
 
             // If the candidate is a better match, save it
             if dtw_dist < bsf {
